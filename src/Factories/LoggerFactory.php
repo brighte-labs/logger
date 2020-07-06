@@ -7,6 +7,7 @@ namespace BrighteCapital\Logger\Factories;
 use BGalati\MonologSentryHandler\SentryHandler;
 use BrighteCapital\Logger\Config;
 use Monolog\ErrorHandler as MonologErrorHandler;
+use Monolog\Formatter\FormatterInterface;
 use Monolog\Handler\FingersCrossedHandler;
 use Monolog\Handler\StreamHandler;
 use Monolog\Logger;
@@ -35,7 +36,7 @@ class LoggerFactory
      * @return Logger
      * @throws \Exception
      */
-    public function create()
+    public function create(FormatterInterface $formatter)
     {
         $logger = new Logger($this->config->getName());
 
@@ -63,7 +64,9 @@ class LoggerFactory
             $logger->pushProcessor(new IntrospectionProcessor());
         }
 
-        $logger->pushHandler(new StreamHandler($this->config->getPath(), $this->config->getLevel()));
+        $stream = new StreamHandler($this->config->getPath(), $this->config->getLevel());
+        $stream->setFormatter($formatter);
+        $logger->pushHandler($stream);
 
         return $logger;
     }

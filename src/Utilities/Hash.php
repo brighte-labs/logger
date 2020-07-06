@@ -2,7 +2,7 @@
 
 namespace BrighteCapital\Logger\Utilities;
 
-use Cake\Datasource\EntityInterface;
+use ArrayAccess;
 
 /**
  * Library of array functions for manipulating and extracting data
@@ -18,75 +18,93 @@ use Cake\Datasource\EntityInterface;
 class Hash
 {
     /**
-     * Collapses a multi-dimensional array into a single dimension, using a delimited array path for
-     * each array element's key, i.e. [['Foo' => ['Bar' => 'Far']]] becomes
-     * ['0.Foo.Bar' => 'Far'].)
+     * Get a single value specified by $path out of $data.
+     * Does not support the full dot notation feature set,
+     * but is faster for simple read operations.
      *
-     * @param array $data Array to flatten
-     * @param string $separator String used to separate array key elements in a path, defaults to '.'
-     * @return array
-     * @link https://book.cakephp.org/3.0/en/core-libraries/hash.html#Cake\Utility\Hash::flatten
+     * @param array|\ArrayAccess $data Array of data or object implementing
+     *   \ArrayAccess interface to operate on.
+     * @param string|array $path The path being searched for. Either a dot
+     *   separated string, or an array of path segments.
+     * @param mixed $default The return value when the path does not exist
+     * @throws \InvalidArgumentException
+     * @return mixed The value fetched from the array, or null.
+     * @link https://book.cakephp.org/3.0/en/core-libraries/hash.html#Cake\Utility\Hash::get
      */
-    public static function flatten(array $data, $separator = '.')
+    public static function get($data, $path, $default = null)
     {
-        $result = [];
-        $stack = [];
-        $path = null;
-
-        reset($data);
-        while (!empty($data)) {
-            $key = key($data);
-            $element = $data[$key];
-            unset($data[$key]);
-
-            if (is_array($element) && !empty($element)) {
-                if (!empty($data)) {
-                    $stack[] = [$data, $path];
-                }
-                $data = $element;
-                reset($data);
-                $path .= $key . $separator;
-            } else {
-                $result[$path . $key] = $element;
-            }
-
-            if (empty($data) && !empty($stack)) {
-                list($data, $path) = array_pop($stack);
-                reset($data);
-            }
+        if (!(is_array($data) || $data instanceof ArrayAccess)) {
+            throw new \InvalidArgumentException(
+                'Invalid data type, must be an array or \ArrayAccess instance.'
+            );
         }
 
-        return $result;
+        if (empty($data) || $path === null) {
+            return $default;
+        }
+
+        if (is_string($path) || is_numeric($path)) {
+            $parts = explode('.', $path);
+        } else {
+            if (!is_array($path)) {
+                throw new \InvalidArgumentException(sprintf(
+                    'Invalid Parameter %s, should be dot separated path or array.',
+                    $path
+                ));
+            }
+
+            $parts = $path;
+        }
+
+        switch (count($parts)) {
+            case 1:
+                return isset($data[$parts[0]]) ? $data[$parts[0]] : $default;
+            case 2:
+                return isset($data[$parts[0]][$parts[1]]) ? $data[$parts[0]][$parts[1]] : $default;
+            case 3:
+                return
+                    isset($data[$parts[0]][$parts[1]][$parts[2]]) ? $data[$parts[0]][$parts[1]][$parts[2]] : $default;
+            default:
+                foreach ($parts as $key) {
+                    if ((is_array($data) || $data instanceof ArrayAccess) && isset($data[$key])) {
+                        $data = $data[$key];
+                    } else {
+                        return $default;
+                    }
+                }
+        }
+
+        return $data;
     }
 
     /**
-     * Merge helper function to reduce duplicated code between merge() and expand().
+     * Recursively filters a data set.
      *
-     * @param array $stack The stack of operations to work with.
-     * @param array $return The return value to operate on.
-     * @return void
+     * @param array $data Either an array to filter, or value when in callback
+     * @param callable|array $callback A function to filter the data with. Defaults to
+     *   `static::_filter()` Which strips out all non-zero empty values.
+     * @return array Filtered array
+     * @link https://book.cakephp.org/3.0/en/core-libraries/hash.html#Cake\Utility\Hash::filter
      */
-    protected static function merge($stack, &$return)
+    public static function filter(array $data, $callback = ['self', '_filter'])
     {
-        while (!empty($stack)) {
-            foreach ($stack as $curKey => &$curMerge) {
-                foreach ($curMerge[0] as $key => &$val) {
-                    $isArray = is_array($curMerge[1]);
-                    if (
-                        $isArray && !empty($curMerge[1][$key])
-                        && (array)$curMerge[1][$key] === $curMerge[1][$key] && (array)$val === $val
-                    ) {
-                        // Recurse into the current merge data as it is an array.
-                        $stack[] = [&$val, &$curMerge[1][$key]];
-                    } elseif ((int)$key === $key && $isArray && isset($curMerge[1][$key])) {
-                        $curMerge[1][] = $val;
-                    } else {
-                        $curMerge[1][$key] = $val;
-                    }
-                }
-                unset($stack[$curKey]);
+        foreach ($data as $k => $v) {
+            if (is_array($v)) {
+                $data[$k] = static::filter($v, $callback);
             }
-            unset($curMerge);
         }
+
+        return array_filter($data, $callback);
+    }
+
+    /**
+     * Callback function for filtering.
+     *
+     * @param mixed $var Array to filter.
+     * @return bool
+     */
+    protected static function _filter($var)
+    {
+        return $var === 0 || $var === 0.0 || $var === '0' || !empty($var);
     }
 }

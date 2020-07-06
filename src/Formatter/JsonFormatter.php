@@ -13,6 +13,18 @@ use BrighteCapital\Logger\Utilities\Hash;
  */
 class JsonFormatter extends \Monolog\Formatter\JsonFormatter
 {
+    public $whiteListedFields;
+
+    public function __construct(
+        $batchMode = \Monolog\Formatter\JsonFormatter::BATCH_MODE_JSON,
+        $appendNewline = true,
+        $whiteListedFields = []
+    )
+    {
+        \Monolog\Formatter\JsonFormatter::__construct($batchMode, $appendNewline);
+        $this->whiteListedFields = $whiteListedFields;
+    }
+
     /**
      * {@inheritdoc}
      */
@@ -21,15 +33,17 @@ class JsonFormatter extends \Monolog\Formatter\JsonFormatter
         unset($record['datetime']);
         $record['@timestamp'] = date('Y-m-d\TH:i:s\Z');
 
-        $context = &$record['context'];
-        $context = Hash::flatten(['c' => $context], '>');
-        $context = array_filter($context, function ($data, $key) {
-            return substr_count($key, '>') < 4;
-        }, ARRAY_FILTER_USE_BOTH);
+        $context = $record['context'];
+        $newContext = [];
 
-        $context = array_map(function ($data) {
-            return self::stringify($data);
-        }, $context);
+        foreach ($this->whiteListedFields as $field) {
+            if ($value = Hash::get($context, $field)) {
+                $newContext[$field] = $this->stringify($value);
+            }
+        }
+
+        $newContext['dataArchive'] = $this->stringify($context);
+        $record['context'] = $newContext;
 
         return $this->toJson($this->normalize($record), true) . ($this->appendNewline ? "\n" : '');
     }
@@ -38,10 +52,9 @@ class JsonFormatter extends \Monolog\Formatter\JsonFormatter
      * Stringify objects to avoid getting converted to json object. Its to avoid
      * elastic search to go over distinct filed limit.
      * @param $data
-     * @param array $context
      * @return string|true
      */
-    protected function stringify($data, array $context = [])
+    protected function stringify($data)
     {
         if (is_string($data)) {
             return $data;
