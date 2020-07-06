@@ -25,7 +25,7 @@
             "BrighteCapital\\Logger\\": "src"
         }
     },
-    "minimum-stability": "dev",
+    "minimum-stability": "stable",
     "scripts": {
         "cs": "vendor/bin/phpcs -ps --standard=PSR12 src/",
         "cbf": "vendor/bin/phpcbf --standard=PSR12 src/"
