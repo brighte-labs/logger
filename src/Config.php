@@ -1,6 +1,6 @@
 <?php
 
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace BrighteCapital\Logger;
 
@@ -118,4 +118,4 @@ class Config
     {
         return $this->sentry;
     }
-}//end class
+}
