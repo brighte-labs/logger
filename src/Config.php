@@ -40,15 +40,17 @@ class Config
      */
     public function __construct(array $config)
     {
-        $this->name = isset($config['name']) ? $config['name'] : null;
-        $this->path = isset($config['path']) ? $config['path'] : null;
-        $this->level = (int) isset($config['level']) ? $config['level'] : null;
-        $this->sentry = (isset($config['sentry']) && $config['sentry'] == "true") ? true : false;
-        $this->sentryDsn = isset($config['sentry_dsn']) ? $config['sentry_dsn'] : null;
-        $this->sentryPublicKey = isset($config['sentry_public_key']) ? $config['sentry_public_key'] : null;
-        $this->sentryHost = isset($config['sentry_host']) ? $config['sentry_host'] : null;
-        $this->sentryProjectId = isset($config['sentry_project_id']) ? $config['sentry_project_id'] : null;
-        $this->sentryEnvironment = isset($config['sentry_environment']) ? $config['sentry_environment'] : null;
+        $this->name = $config['name'] ?: null;
+        $this->path = $config['path'] ?: null;
+        $this->level = (int) $config['level'] ?: null;
+        if ($sentry = $config['sentry']) {
+            $this->sentry = $sentry['active'] == "true" ? true : false;
+            $this->sentryDsn = $sentry['sentry_dsn'] ?: null;
+            $this->sentryPublicKey = $sentry['sentry_public_key'] ?: null;
+            $this->sentryHost = $sentry['sentry_host'] ?: null;
+            $this->sentryProjectId = $sentry['sentry_project_id'] ?? null;
+            $this->sentryEnvironment = $sentry['sentry_environment'] ?: null;
+        }
     }
 
     /**
@@ -114,7 +116,7 @@ class Config
     /**
      * @return bool
      */
-    public function isSentry()
+    public function hasSentry()
     {
         return $this->sentry;
     }

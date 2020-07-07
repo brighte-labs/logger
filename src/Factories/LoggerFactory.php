@@ -45,8 +45,8 @@ class LoggerFactory
         $handler->registerExceptionHandler();
         $handler->registerFatalHandler();
 
-        if ($this->config->isSentry()) {
-            $ravenHandler = new SentryHandler(new Hub($this->getSentry()));
+        if ($this->config->hasSentry()) {
+            $ravenHandler = new SentryHandler(new Hub($this->getSentryClient()));
             $logger->pushHandler(
                 new FingersCrossedHandler(
                     $ravenHandler,
@@ -74,7 +74,7 @@ class LoggerFactory
     /**
      * @return ClientInterface
      */
-    private function getSentry(): ClientInterface
+    private function getSentryClient(): ClientInterface
     {
         return ClientBuilder::create($this->config->getSentryConfig())->getClient();
     }
