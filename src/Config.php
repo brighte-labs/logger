@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace BrighteCapital\Logger;
 
+use Monolog\Logger;
+
 class Config
 {
     /** @var string */
@@ -40,15 +42,12 @@ class Config
      */
     public function __construct(array $config)
     {
-        $this->name = $config['name'] ?: null;
-        $this->path = $config['path'] ?: null;
-        $this->level = (int) $config['level'] ?: null;
+        $this->name = $config['name'] ?: 'brighte-capital';
+        $this->path = $config['path'] ?: 'php://stderr';
+        $this->level = (int) $config['level'] ?: Logger::ERROR;
         if ($sentry = $config['sentry']) {
-            $this->sentry = $sentry['active'] == "true" ? true : false;
+            $this->sentry = $sentry['app_log_sentry'] == "true" ? true : false;
             $this->sentryDsn = $sentry['sentry_dsn'] ?: null;
-            $this->sentryPublicKey = $sentry['sentry_public_key'] ?: null;
-            $this->sentryHost = $sentry['sentry_host'] ?: null;
-            $this->sentryProjectId = $sentry['sentry_project_id'] ?? null;
             $this->sentryEnvironment = $sentry['sentry_environment'] ?: null;
         }
     }
@@ -56,13 +55,10 @@ class Config
     /**
      * @return array
      */
-    public function getSentryConfig()
+    public function getSentryConfig(): array
     {
         return [
             'dsn' => $this->sentryDsn,
-            'public_key' => $this->sentryPublicKey,
-            'host' => $this->sentryHost,
-            'project_id' => $this->sentryProjectId,
             'environment' => $this->sentryEnvironment,
         ];
     }
@@ -70,7 +66,7 @@ class Config
     /**
      * @return string
      */
-    public function getName()
+    public function getName(): string
     {
         return $this->name;
     }
@@ -89,7 +85,7 @@ class Config
     /**
      * @return string
      */
-    public function getPath()
+    public function getPath(): string
     {
         return $this->path;
     }
@@ -97,7 +93,7 @@ class Config
     /**
      * @return int
      */
-    public function getLevel()
+    public function getLevel(): int
     {
         return $this->level;
     }
@@ -106,7 +102,7 @@ class Config
      * @param int|string $level
      * @return \BrighteCapital\Logger\Config
      */
-    public function setLevel($level = null)
+    public function setLevel(int $level = 0)
     {
         $this->level = $level;
 
@@ -116,7 +112,7 @@ class Config
     /**
      * @return bool
      */
-    public function hasSentry()
+    public function hasSentry(): bool
     {
         return $this->sentry;
     }

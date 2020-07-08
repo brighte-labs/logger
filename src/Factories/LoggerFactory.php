@@ -16,8 +16,10 @@ use Monolog\Processor\MemoryUsageProcessor;
 use Monolog\Processor\ProcessIdProcessor;
 use Monolog\Processor\UidProcessor;
 use Monolog\Processor\WebProcessor;
+use Psr\Log\LoggerInterface;
 use Sentry\ClientBuilder;
 use Sentry\ClientInterface;
+use Sentry\State\Hub;
 
 class LoggerFactory
 {
@@ -33,10 +35,10 @@ class LoggerFactory
     }
 
     /**
-     * @return Logger
+     * @return LoggerInterface
      * @throws \Exception
      */
-    public function create(FormatterInterface $formatter)
+    public function create(FormatterInterface $formatter): LoggerInterface
     {
         $logger = new Logger($this->config->getName());
 
