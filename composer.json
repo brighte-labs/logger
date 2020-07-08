@@ -14,7 +14,8 @@
         "php": "^7.4",
         "monolog/monolog": "^1.6",
         "sentry/sentry": "^2.4",
-        "bgalati/monolog-sentry-handler": "^1.0"
+        "bgalati/monolog-sentry-handler": "^1.0",
+        "sentry/sdk": "^2.1"
     },
     "require-dev": {
         "phpunit/phpunit": "^7.5",
