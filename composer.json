@@ -11,7 +11,7 @@
         }
     ],
     "require": {
-        "php": "^7.4",
+        "php": "^7.3",
         "monolog/monolog": "^1.6",
         "bgalati/monolog-sentry-handler": "^1.0",
         "sentry/sdk": "^2.1"
