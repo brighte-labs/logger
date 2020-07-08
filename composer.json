@@ -2,7 +2,7 @@
     "name": "brightecapital/logger",
     "description": "Extension of monolog to adapt to Brighte's needs",
     "keywords": ["logger", "monolog"],
-    "homepage": "https://bitbucket.org/brighte/brighte-queue-client/",
+    "homepage": "https://bitbucket.org/brighte/logger/",
     "license": "MIT",
     "authors": [
         {

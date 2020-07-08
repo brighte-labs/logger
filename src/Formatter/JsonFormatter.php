@@ -21,18 +21,16 @@ class JsonFormatter extends \Monolog\Formatter\LogstashFormatter
      */
     public function format(array $record)
     {
-        $newContext = [];
-
         if ($context = $record['context']) {
+            $newContext = [];
             foreach ($this->whiteListedFields as $field) {
                 if ($value = Hash::get($context, $field)) {
                     $newContext[$field] = $this->stringify($value);
                 }
             }
+            $newContext['dataArchive'] = $this->stringify($context);
+            $record['context'] = $newContext;
         }
-
-        $newContext['dataArchive'] = $this->stringify($context);
-        $record['context'] = $newContext;
 
         return $this->toJson($this->normalize($record), true);
     }
