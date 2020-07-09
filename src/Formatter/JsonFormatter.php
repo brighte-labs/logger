@@ -11,8 +11,9 @@ class JsonFormatter extends \Monolog\Formatter\LogstashFormatter
 {
     public $whiteListedFields;
 
-    public function __construct($whiteListedFields = [])
+    public function __construct($whiteListedFields, $applicationName)
     {
+        parent::__construct($applicationName, null, null, 'context_', self::V1);
         $this->whiteListedFields = $whiteListedFields;
     }
 
@@ -32,7 +33,7 @@ class JsonFormatter extends \Monolog\Formatter\LogstashFormatter
             $record['context'] = $newContext;
         }
 
-        return $this->toJson($this->normalize($record), true);
+        return parent::format($record);
     }
 
     /**

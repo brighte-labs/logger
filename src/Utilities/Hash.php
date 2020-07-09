@@ -76,35 +76,4 @@ class Hash
 
         return $data;
     }
-
-    /**
-     * Recursively filters a data set.
-     *
-     * @param array $data Either an array to filter, or value when in callback
-     * @param callable|array $callback A function to filter the data with. Defaults to
-     *   `static::_filter()` Which strips out all non-zero empty values.
-     * @return array Filtered array
-     * @link https://book.cakephp.org/3.0/en/core-libraries/hash.html#Cake\Utility\Hash::filter
-     */
-    public static function filter(array $data, $callback = ['self', '_filter'])
-    {
-        foreach ($data as $k => $v) {
-            if (is_array($v)) {
-                $data[$k] = static::filter($v, $callback);
-            }
-        }
-
-        return array_filter($data, $callback);
-    }
-
-    /**
-     * Callback function for filtering.
-     *
-     * @param mixed $var Array to filter.
-     * @return bool
-     */
-    protected static function _filter($var)
-    {
-        return $var === 0 || $var === 0.0 || $var === '0' || !empty($var);
-    }
 }
