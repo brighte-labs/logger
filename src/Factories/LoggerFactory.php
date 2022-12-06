@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace BrighteCapital\Logger\Factories;
 
-use BGalati\MonologSentryHandler\SentryHandler;
+use Sentry\Monolog\Handler as SentryHandler;
 use BrighteCapital\Logger\Config;
 use Monolog\ErrorHandler as MonologErrorHandler;
 use Monolog\Formatter\FormatterInterface;
